@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>For Maya 💌</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --paper:#fbf7f0;
+      --ink:#221f26;
+      --muted: rgba(34,31,38,.62);
+      --rose:#ff4d84;
+      --berry:#c2184b;
+      --shadow: 0 18px 60px rgba(0,0,0,.18);
+      --shadow2: 0 10px 30px rgba(0,0,0,.14);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(900px 600px at 15% 20%, rgba(255,77,132,.18), transparent 60%),
+        radial-gradient(900px 600px at 85% 30%, rgba(255,204,138,.22), transparent 60%),
+        radial-gradient(900px 600px at 50% 90%, rgba(170,210,255,.18), transparent 60%),
+        linear-gradient(180deg, #f4efe6, #efe7da);
+      display:grid;
+      place-items:center;
+      padding: 22px;
+      overflow:hidden;
+    }
+
+    body::before{
+      content:"";
+      position:fixed; inset:0;
+      background-image:
+        repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0 1px, transparent 1px 3px),
+        repeating-linear-gradient(90deg, rgba(0,0,0,.015) 0 1px, transparent 1px 4px);
+      mix-blend-mode:multiply;
+      opacity:.35;
+      pointer-events:none;
+    }
+
+    .stage{
+      width:min(720px, 100%);
+      position:relative;
+    }
+
+    .tape{
+      position:absolute;
+      top:-14px;
+      left: 50%;
+      transform: translateX(-50%) rotate(2deg);
+      width: 180px;
+      height: 44px;
+      background: rgba(246,220,181,.9);
+      border: 1px dashed rgba(34,31,38,.18);
+      border-radius: 12px;
+      box-shadow: 0 10px 22px rgba(0,0,0,.10);
+      pointer-events:none;
+      z-index: 5;
+    }
+    .tape:after{
+      content:"";
+      position:absolute;
+      inset: 8px 10px;
+      border-radius:10px;
+      background: linear-gradient(90deg, rgba(255,255,255,.35), transparent);
+      opacity:.65;
+    }
+
+    /* page hidden by default */
+    .page{
+      display:none;
+      background: var(--paper);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 26px 20px 20px;
+      overflow:hidden;
+      transform: rotate(-.8deg);
+      min-height: 520px;
+
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap: 14px;
+      text-align:center;
+    }
+    .page.active{
+      display:flex;
+      animation: fadeIn .22s ease;
+    }
+    @keyframes fadeIn{
+      from{opacity:0; transform: rotate(-.8deg) translateY(8px)}
+      to{opacity:1; transform: rotate(-.8deg) translateY(0)}
+    }
+
+    h1{
+      font-family:"DM Serif Display", serif;
+      font-weight:400;
+      margin:0;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height:1.1;
+      letter-spacing:.2px;
+    }
+
+    .hint{
+      margin:0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 48ch;
+    }
+
+    .btn{
+      border:none;
+      cursor:pointer;
+      border-radius: 16px;
+      padding: 14px 22px;
+      font-weight: 900;
+      font-size: 18px;
+      user-select:none;
+      transition: transform .12s ease, filter .12s ease;
+    }
+    .primary{
+      color:#fff;
+      background: linear-gradient(180deg, var(--rose), var(--berry));
+      box-shadow: 0 14px 0 rgba(0,0,0,.07), 0 22px 40px rgba(194,24,75,.22);
+    }
+    .primary:hover{ transform: translateY(-1px); filter:saturate(1.05); }
+    .primary:active{ transform: translateY(2px) scale(.99); }
+
+    /* responsive small but visible picture */
+    .picWrap{
+      width: min(240px, 70vw);
+      aspect-ratio: 4 / 3;
+      border-radius: 16px;
+      overflow:hidden;
+      background: rgba(255,255,255,.6);
+      border: 1px solid rgba(34,31,38,.10);
+      box-shadow: var(--shadow2);
+      display:grid;
+      place-items:center;
+    }
+    .picWrap img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+    .placeholder{
+      width:100%;
+      height:100%;
+      display:grid;
+      place-items:center;
+      color: rgba(34,31,38,.65);
+      font-weight: 800;
+      font-size: 14px;
+      padding: 12px;
+      background:
+        radial-gradient(220px 160px at 30% 35%, rgba(255,77,132,.18), transparent 60%),
+        radial-gradient(260px 180px at 70% 40%, rgba(255,205,140,.22), transparent 62%),
+        linear-gradient(180deg, #fff, #fff6ef);
+    }
+
+    .actionsBox{
+      width: min(520px, 100%);
+      height: 150px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.55);
+      border: 1px dashed rgba(34,31,38,.14);
+      box-shadow: var(--shadow2);
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 14px;
+      overflow:hidden;
+      padding: 10px;
+    }
+
+    .yesBtn{
+      border:none;
+      cursor:pointer;
+      padding: 18px 34px;
+      border-radius: 16px;
+      font-weight: 900;
+      font-size: 22px;
+      color: #fff;
+      background: linear-gradient(180deg, var(--rose), var(--berry));
+      box-shadow: 0 14px 0 rgba(0,0,0,.07), 0 22px 40px rgba(194,24,75,.22);
+      transform: rotate(1deg);
+      user-select:none;
+      z-index: 2;
+      transition: transform .12s ease, filter .12s ease;
+    }
+    .yesBtn:hover{ transform: rotate(1deg) translateY(-1px); filter:saturate(1.05); }
+    .yesBtn:active{ transform: rotate(1deg) translateY(2px) scale(.99); }
+
+    .noBtn{
+      position:absolute;
+      border: 1px solid rgba(34,31,38,.12);
+      background: rgba(255,255,255,.85);
+      padding: 10px 12px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-weight: 900;
+      font-size: 13px;
+      color: rgba(34,31,38,.45);
+      box-shadow: var(--shadow2);
+      user-select:none;
+      z-index: 3;
+      left: 14px;
+      top: 14px;
+    }
+
+    .popup{
+      position:absolute;
+      left:50%;
+      top: 10px;
+      transform: translateX(-50%) rotate(-1deg);
+      background: #fff7b8;
+      border: 1px solid rgba(34,31,38,.12);
+      border-radius: 14px;
+      padding: 10px 12px;
+      max-width: 320px;
+      font-size: 13px;
+      color: rgba(34,31,38,.72);
+      box-shadow: 0 18px 50px rgba(0,0,0,.14);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .18s ease, transform .18s ease;
+      z-index: 4;
+    }
+    .popup.show{
+      opacity:1;
+      transform: translateX(-50%) translateY(-6px) rotate(-1deg);
+    }
+
+    /* overlay / modal */
+    .overlay{
+      position:fixed; inset:0;
+      display:none; place-items:center;
+      background: rgba(0,0,0,.35);
+      backdrop-filter: blur(8px);
+      padding: 18px;
+    }
+    .overlay.show{display:grid}
+
+    .modal{
+      width:min(520px, 100%);
+      background: rgba(255,255,255,.95);
+      border-radius: 22px;
+      padding: 18px 16px;
+      box-shadow: 0 30px 90px rgba(0,0,0,.22);
+      text-align:center;
+    }
+    .modal h2{
+      margin: 4px 0 8px;
+      font-family:"DM Serif Display", serif;
+      font-weight:400;
+      font-size: 34px;
+    }
+    .modal p{
+      margin:0 0 14px;
+      color: rgba(34,31,38,.70);
+      line-height: 1.5;
+    }
+    .row{display:flex; justify-content:center; gap:10px; flex-wrap:wrap;}
+    .pill{
+      border:none;
+      cursor:pointer;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 900;
+      background: rgba(34,31,38,.06);
+      color: rgba(34,31,38,.75);
+    }
+    .pill.primary2{
+      background: linear-gradient(180deg, var(--rose), var(--berry));
+      color:#fff;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="stage">
+    <div class="tape" aria-hidden="true"></div>
+
+    <!-- PAGE 1 -->
+    <section class="page active" id="page1">
+      <h1>I have a surprise for you… 🎁</h1>
+      <p class="hint">Open it when you’re ready.</p>
+      <button class="btn primary" id="openBtn" type="button">Open 💌</button>
+    </section>
+
+    <!-- PAGE 2 -->
+    <section class="page" id="page2">
+      <h1>Will you be my Valentine, Maya? 💘</h1>
+
+      <div class="picWrap" id="picWrap">
+        <img id="mayaPic" src="maya.png.jpeg" alt="Maya" />
+      </div>
+
+      <div class="actionsBox" id="actionsBox">
+        <button class="yesBtn" id="yesBtn" type="button">YES 🥰</button>
+        <div class="popup" id="popup">Okay but listen…</div>
+        <button class="noBtn" id="noBtn" type="button">No 🥺</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- MAIN MODAL -->
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <h2 id="modalTitle">Yayyyy 💞</h2>
+      <p id="modalText">Happy Valentine’s, Maya 💘</p>
+      <div class="row" id="modalButtons">
+        <button class="pill" id="closeBtn" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const page1 = document.getElementById("page1");
+      const page2 = document.getElementById("page2");
+      const openBtn = document.getElementById("openBtn");
+
+      const actionsBox = document.getElementById("actionsBox");
+      const yesBtn = document.getElementById("yesBtn");
+      const noBtn = document.getElementById("noBtn");
+      const popup = document.getElementById("popup");
+
+      const overlay = document.getElementById("overlay");
+      const modalTitle = document.getElementById("modalTitle");
+      const modalText = document.getElementById("modalText");
+      const modalButtons = document.getElementById("modalButtons");
+      const closeBtn = document.getElementById("closeBtn");
+
+      const pic = document.getElementById("mayaPic");
+      const picWrap = document.getElementById("picWrap");
+
+      const reasons = [
+        "Because I want to take you on the cutest date 🥺💗",
+        "Because your smile is my favorite thing 😭",
+        "Because I’ll spoil you with snacks + attention 🍫✨",
+        "Because you make my days feel softer 🫶",
+        "Because I choose you, again and again 💞",
+        "Because you deserve gentle love 🥹",
+        "Because you + me just makes sense 😌",
+        "Because pleaseee Maya 😭💘"
+      ];
+
+      let idx = 0;
+      let noCount = 0;
+      let timer = null;
+
+      // picture fallback: maya.png -> maya.jpg -> placeholder
+      let triedJpg = false;
+      pic.addEventListener("error", () => {
+        if (!triedJpg) {
+          triedJpg = true;
+          pic.src = "maya.jpg";
+          return;
+        }
+        picWrap.innerHTML = `
+          <div class="placeholder">
+            <div>
+              <div style="font-size:34px; margin-bottom:6px;">💞</div>
+              <div>Upload <b>maya.png</b> or <b>maya.jpg</b><br/>next to index.html</div>
+            </div>
+          </div>
+        `;
+      });
+
+      function rand(min, max){ return min + Math.random() * (max - min); }
+
+      function rectOverlap(a, b, pad=0){
+        return !(
+          a.right < b.left - pad ||
+          a.left > b.right + pad ||
+          a.bottom < b.top - pad ||
+          a.top > b.bottom + pad
+        );
+      }
+
+      function placeNoInsideBox(){
+        const area = actionsBox.getBoundingClientRect();
+        const btnW = noBtn.offsetWidth;
+        const btnH = noBtn.offsetHeight;
+
+        const pad = 10;
+        const maxX = Math.max(pad, actionsBox.clientWidth - btnW - pad);
+        const maxY = Math.max(pad, actionsBox.clientHeight - btnH - pad);
+
+        const yes = yesBtn.getBoundingClientRect();
+        const yesRel = {
+          left: yes.left - area.left,
+          top: yes.top - area.top,
+          right: yes.right - area.left,
+          bottom: yes.bottom - area.top
+        };
+
+        for (let k = 0; k < 60; k++){
+          const x = rand(pad, maxX);
+          const y = rand(pad, maxY);
+          const test = { left:x, top:y, right:x+btnW, bottom:y+btnH };
+          if (rectOverlap(test, yesRel, 18)) continue;
+
+          noBtn.style.left = `${x}px`;
+          noBtn.style.top  = `${y}px`;
+          return;
+        }
+
+        noBtn.style.left = `${pad}px`;
+        noBtn.style.top  = `${pad}px`;
+      }
+
+      function showPopup(text){
+        popup.textContent = text;
+        popup.classList.add("show");
+        clearTimeout(timer);
+        timer = setTimeout(() => popup.classList.remove("show"), 1200);
+      }
+
+      function showModal(title, text, buttonsHtml){
+        modalTitle.textContent = title;
+        modalText.textContent = text;
+        modalButtons.innerHTML = buttonsHtml;
+        overlay.classList.add("show");
+      }
+
+      function showYesCelebration(){
+        showModal(
+          "Yayyyy 💞",
+          "Happy Valentine’s, Maya 💘",
+          `<button class="pill" id="closeNow" type="button">Close</button>`
+        );
+        document.getElementById("closeNow").addEventListener("click", () => overlay.classList.remove("show"));
+      }
+
+      openBtn.addEventListener("click", () => {
+        page1.classList.remove("active");
+        page2.classList.add("active");
+        requestAnimationFrame(() => placeNoInsideBox());
+      });
+
+      noBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        noCount++;
+        showPopup(reasons[idx % reasons.length]);
+        idx++;
+        placeNoInsideBox();
+
+        if (noCount >= 10){
+          // After 10 taps: show a final prompt (still can choose Maybe later)
+          showModal(
+            "Okay okay… 😭💗",
+            "You clicked No 10 times… last chance?",
+            `
+              <button class="pill primary2" id="finalYes" type="button">Yes 🥰</button>
+              <button class="pill" id="maybeLater" type="button">Maybe later</button>
+            `
+          );
+
+          document.getElementById("finalYes").addEventListener("click", () => {
+            overlay.classList.remove("show");
+            showYesCelebration();
+          });
+          document.getElementById("maybeLater").addEventListener("click", () => {
+            overlay.classList.remove("show");
+            noCount = 0; // reset if you want it to happen again
+          });
+        }
+      });
+
+      yesBtn.addEventListener("click", () => {
+        showYesCelebration();
+      });
+
+      // close (for any default close button that might exist)
+      if (closeBtn){
+        closeBtn.addEventListener("click", () => overlay.classList.remove("show"));
+      }
+
+      window.addEventListener("resize", () => {
+        if (page2.classList.contains("active")) placeNoInsideBox();
+      });
+    });
+  </script>
+</body>
+</html>
